@@ -14,7 +14,7 @@ class KnowledgeDocResponse(BaseModel):
     doc_type: str
     filename: str | None
     title: str | None
-    metadata: dict | None
+    doc_metadata: dict | None
     chunk_count: int
     status: str
     created_at: datetime
