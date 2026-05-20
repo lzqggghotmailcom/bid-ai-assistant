@@ -1,0 +1,87 @@
+version: "3.8"
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: biduser
+      POSTGRES_PASSWORD: bidpass
+      POSTGRES_DB: bid_assistant
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biduser -d bid_assistant"]
+      interval: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_TYPE=postgresql
+      - DATABASE_URL=postgresql+asyncpg://biduser:bidpass@db:5432/bid_assistant
+      - DATABASE_URL_SYNC=postgresql+psycopg2://biduser:bidpass@db:5432/bid_assistant
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - DEBUG=false
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/uploads
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen(\"http://localhost:8000/health\")"]
+      interval: 30s
+      retries: 3
+
+  celery-worker:
+    build: ./backend
+    environment:
+      - DATABASE_TYPE=postgresql
+      - DATABASE_URL=postgresql+asyncpg://biduser:bidpass@db:5432/bid_assistant
+      - DATABASE_URL_SYNC=postgresql+psycopg2://biduser:bidpass@db:5432/bid_assistant
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEBUG=false
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/uploads
+    command: celery -A app.services.tasks.celery_app worker --loglevel=info --concurrency=4
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: /api/v1
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=/api/v1
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  uploads:
