@@ -123,3 +123,8 @@ bid-ai-assistant/
 ├── docker-compose.yml
 └── .env.example
 ```
+
+## 联系方式
+
+- **邮箱** — lzqggg@gmail.com
+- **GitHub Issues** — [提交问题或建议](https://github.com/lzqggghotmailcom/bid-ai-assistant/issues)
