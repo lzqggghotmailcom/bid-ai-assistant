@@ -18,7 +18,7 @@ else:
 class KnowledgeDocument(Base):
     __tablename__ = "knowledge_documents"
 
-    id: Mapped[uuid.UUID] = mapped_column(String(36), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id: Mapped[uuid.UUID] = mapped_column(String(36), ForeignKey("users.id"), nullable=False, index=True)
     doc_type: Mapped[str] = mapped_column(String(20), nullable=False)
     filename: Mapped[str | None] = mapped_column(String(500), nullable=True)
@@ -35,7 +35,7 @@ class KnowledgeDocument(Base):
 class KnowledgeChunk(Base):
     __tablename__ = "knowledge_chunks"
 
-    id: Mapped[uuid.UUID] = mapped_column(String(36), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     document_id: Mapped[uuid.UUID] = mapped_column(String(36), ForeignKey("knowledge_documents.id", ondelete="CASCADE"), nullable=False, index=True)
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)

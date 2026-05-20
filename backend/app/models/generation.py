@@ -11,7 +11,7 @@ from ..core.database import Base
 class GenerationTask(Base):
     __tablename__ = "generation_tasks"
 
-    id: Mapped[uuid.UUID] = mapped_column(String(36), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     bid_id: Mapped[uuid.UUID] = mapped_column(String(36), ForeignKey("bids.id"), nullable=False)
     user_id: Mapped[uuid.UUID] = mapped_column(String(36), ForeignKey("users.id"), nullable=False)
     status: Mapped[str] = mapped_column(String(30), default="pending")

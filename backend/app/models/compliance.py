@@ -10,7 +10,7 @@ from ..core.database import Base
 class ComplianceReport(Base):
     __tablename__ = "compliance_reports"
 
-    id: Mapped[uuid.UUID] = mapped_column(String(36), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     bid_id: Mapped[uuid.UUID] = mapped_column(String(36), ForeignKey("bids.id"), unique=True, nullable=False)
     score_coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     reject_clause_check: Mapped[dict | None] = mapped_column(JSON, nullable=True)
