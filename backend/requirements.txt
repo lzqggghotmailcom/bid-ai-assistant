@@ -16,7 +16,7 @@ pgvector==0.3.6
 # AI / ML
 openai==1.59.3
 sentence-transformers==3.4.1
-FlagEmbedding==1.3.4
+FlagEmbedding==1.4.0
 
 # Task Queue
 celery[redis]==5.4.0
